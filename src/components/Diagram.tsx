@@ -35,6 +35,47 @@ const SECTION_LABELS = [
   { text: 'BACK-OFFICE', x: 893, y: 16 },
 ]
 
+// ── Concept annotation chips ───────────────────────────────────────────────
+// Concise AMI capability labels floated near the relevant parts of the diagram
+const CONCEPT_CHIPS = [
+  // Meters originate interval data and last-gasp signals
+  { text: 'Interval data',             cx: 205, cy: 558 },
+  // HES orchestrates on-demand reads and remote commands
+  { text: 'On-demand reads',           cx: 590, cy: 173 },
+  { text: 'Remote commands',           cx: 590, cy: 190 },
+  // OMS acts on last-gasp to detect and map outages
+  { text: 'Last-gasp · Outage detection', cx: 980, cy: 293 },
+  // MDMS-to-Billing path = meter-to-cash
+  { text: 'Meter-to-cash',             cx: 980, cy: 130 },
+]
+
+// ── Concept chip SVG element ───────────────────────────────────────────────
+function Chip({ text, cx, cy }: { text: string; cx: number; cy: number }) {
+  const w = text.length * 5.3 + 16
+  return (
+    <g style={{ pointerEvents: 'none', userSelect: 'none' }}>
+      <rect
+        x={cx - w / 2} y={cy - 7}
+        width={w} height={14}
+        rx={3}
+        fill="#07101e"
+        stroke="#1e2d45"
+        strokeWidth={0.8}
+      />
+      <text
+        x={cx} y={cy + 4}
+        textAnchor="middle"
+        fill="#4d6a85"
+        fontSize={8}
+        fontFamily="system-ui, 'Segoe UI', sans-serif"
+        letterSpacing={0.4}
+      >
+        {text}
+      </text>
+    </g>
+  )
+}
+
 // ── NodeRect ───────────────────────────────────────────────────────────────
 interface NodeRectProps {
   node: DiagramNode
@@ -59,10 +100,13 @@ function NodeRect({ node, isSelected, isDimmed, isHovered, onMouseEnter, onMouse
       style={{ cursor: 'pointer' }}
       role="button"
       aria-label={node.label}
-      opacity={isDimmed ? 0.3 : 1}
+      opacity={isDimmed ? 0.28 : 1}
     >
+      {/* Native tooltip */}
+      <title>{node.label}</title>
+
       {/* Hover ring */}
-      {isHovered && !isSelected && (
+      {isHovered && (
         <rect
           x={node.x - 3} y={node.y - 3}
           width={node.width + 6} height={node.height + 6}
@@ -79,7 +123,7 @@ function NodeRect({ node, isSelected, isDimmed, isHovered, onMouseEnter, onMouse
           width={node.width + 10} height={node.height + 10}
           rx={11} fill="none"
           stroke={STROKE[node.category]}
-          strokeWidth={2.5} opacity={0.4}
+          strokeWidth={2.5} opacity={0.45}
         />
       )}
 
@@ -119,13 +163,12 @@ interface DiagramProps {
 export default function Diagram({ selectedNodeId, onNodeClick, showPower, showData }: DiagramProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null)
 
-  // All node IDs in the "selection neighborhood" (selected + direct neighbors)
   const neighborIds = useMemo(() => {
     if (!selectedNodeId) return new Set<string>()
     const ids = new Set<string>([selectedNodeId])
     for (const c of CONNECTIONS) {
       if (c.fromId === selectedNodeId) ids.add(c.toId)
-      if (c.toId === selectedNodeId) ids.add(c.fromId)
+      if (c.toId   === selectedNodeId) ids.add(c.fromId)
     }
     return ids
   }, [selectedNodeId])
@@ -169,12 +212,12 @@ export default function Diagram({ selectedNodeId, onNodeClick, showPower, showDa
 
         {/* Section labels */}
         {SECTION_LABELS.map((l) => (
-          <text key={l.text} x={l.x} y={l.y} textAnchor="middle" fill="#475569"
+          <text key={l.text} x={l.x} y={l.y} textAnchor="middle" fill="#64748b"
             fontSize={9} fontFamily="system-ui, 'Segoe UI', sans-serif" fontWeight={600} letterSpacing={1.5}>
             {l.text}
           </text>
         ))}
-        <text x={205} y={492} textAnchor="middle" fill="#374151"
+        <text x={205} y={492} textAnchor="middle" fill="#4b5563"
           fontSize={8.5} fontFamily="system-ui, 'Segoe UI', sans-serif" fontWeight={600} letterSpacing={1.2}>
           SMART METERS
         </text>
@@ -218,12 +261,17 @@ export default function Diagram({ selectedNodeId, onNodeClick, showPower, showDa
           )
         })}
 
+        {/* Concept annotation chips — rendered above connections, below nodes */}
+        {CONCEPT_CHIPS.map((c) => (
+          <Chip key={c.text} text={c.text} cx={c.cx} cy={c.cy} />
+        ))}
+
         {/* Nodes */}
         {NODES.map((node) => {
           const isSelected  = node.id === selectedNodeId
           const isConnected = neighborIds.has(node.id)
           const isDimmed    = selectedNodeId !== null && !isConnected
-          const isHovered   = hoveredId === node.id
+          const isHovered   = hoveredId === node.id && !isSelected
 
           return (
             <NodeRect
@@ -232,7 +280,7 @@ export default function Diagram({ selectedNodeId, onNodeClick, showPower, showDa
               isSelected={isSelected}
               isConnected={isConnected}
               isDimmed={isDimmed}
-              isHovered={isHovered && !isSelected}
+              isHovered={isHovered}
               onMouseEnter={() => setHoveredId(node.id)}
               onMouseLeave={() => setHoveredId(null)}
               onClick={() => onNodeClick(node.id)}
