@@ -1,0 +1,4 @@
+/* App-level overrides — component styles live in Tailwind classes */
+* {
+  box-sizing: border-box;
+}
