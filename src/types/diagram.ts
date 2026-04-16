@@ -19,6 +19,11 @@ export interface DiagramConnection {
   toId: string
 }
 
+export interface NodeConcept {
+  title: string
+  content: string
+}
+
 export interface NodeContent {
   title: string
   categoryLabel: string
@@ -27,4 +32,5 @@ export interface NodeContent {
   upstream: string[]
   downstream: string[]
   whyItMatters: string
+  concepts?: NodeConcept[]
 }

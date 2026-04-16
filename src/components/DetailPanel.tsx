@@ -138,6 +138,27 @@ export default function DetailPanel({ selectedNodeId, onClose }: DetailPanelProp
               </p>
             </div>
 
+            {/* Key Concepts */}
+            {content.concepts && content.concepts.length > 0 && (
+              <>
+                <div className="h-px bg-slate-800/80" />
+                <Section label="Key Concepts">
+                  <div className="space-y-3">
+                    {content.concepts.map((c) => (
+                      <div key={c.title} className="rounded-md bg-slate-800/40 border border-slate-700/40 px-3 py-2.5">
+                        <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-1">
+                          {c.title}
+                        </div>
+                        <p className="text-[12px] text-slate-400 leading-relaxed">
+                          {c.content}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </Section>
+              </>
+            )}
+
             {/* Bottom breathing room */}
             <div className="h-2" />
           </div>
