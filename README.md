@@ -126,10 +126,10 @@ src/
 ## Roadmap
 
 - [x] **Phase 1** — App shell: layout, header, placeholders, legend, styling
-- [ ] **Phase 2** — Core SVG diagram: all nodes positioned, labeled, flow arrows drawn
-- [ ] **Phase 3** — Interactivity: node click → detail panel with rich content
-- [ ] **Phase 4** — Layer toggles, hover highlights, selected path emphasis
-- [ ] **Phase 5** — Polish, concept callouts, responsiveness, portfolio-ready finish
+- [x] **Phase 2** — Core SVG diagram: all nodes positioned, labeled, flow arrows drawn
+- [x] **Phase 3** — Interactivity: node click → detail panel with rich content
+- [x] **Phase 4** — Layer toggles, hover highlights, selected path emphasis
+- [x] **Phase 5** — Polish, concept callouts, responsiveness, portfolio-ready finish
 
 ---
 
