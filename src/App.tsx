@@ -1,6 +1,6 @@
 import './App.css'
 import Header from './components/Header'
-import DiagramPlaceholder from './components/DiagramPlaceholder'
+import Diagram from './components/Diagram'
 import DetailPanel from './components/DetailPanel'
 import Legend from './components/Legend'
 
@@ -10,7 +10,7 @@ export default function App() {
       <Header />
 
       <div className="flex flex-1 overflow-hidden">
-        <DiagramPlaceholder />
+        <Diagram />
         <DetailPanel />
       </div>
 
