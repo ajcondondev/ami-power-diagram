@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from 'react'
 import type { NodeCategory } from '../types/diagram'
 import { NODES } from '../data/nodes'
 import { NODE_CONTENT } from '../data/nodeContent'
@@ -15,6 +16,9 @@ const ACCENT_BAR: Record<NodeCategory, string> = {
   ami:        'bg-blue-500',
   backoffice: 'bg-violet-500',
 }
+
+const MIN_WIDTH = 288
+const MAX_WIDTH = 680
 
 interface DetailPanelProps {
   selectedNodeId: string | null
@@ -53,8 +57,58 @@ export default function DetailPanel({ selectedNodeId, onClose }: DetailPanelProp
   const node    = selectedNodeId ? NODES.find((n) => n.id === selectedNodeId) ?? null : null
   const content = node ? NODE_CONTENT[node.id] ?? null : null
 
+  const [panelWidth, setPanelWidth] = useState(MIN_WIDTH)
+  const isDragging = useRef(false)
+  const startX = useRef(0)
+  const startWidth = useRef(0)
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging.current) return
+      const delta = startX.current - e.clientX
+      const newWidth = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, startWidth.current + delta))
+      setPanelWidth(newWidth)
+    }
+    const handleMouseUp = () => {
+      if (isDragging.current) {
+        isDragging.current = false
+        document.body.style.cursor = ''
+        document.body.style.userSelect = ''
+      }
+    }
+    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mouseup', handleMouseUp)
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [])
+
+  const handleDragStart = (e: React.MouseEvent) => {
+    isDragging.current = true
+    startX.current = e.clientX
+    startWidth.current = panelWidth
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+    e.preventDefault()
+  }
+
+  const isWide = panelWidth > 420
+
   return (
-    <aside className="w-72 shrink-0 bg-slate-900 border-l border-slate-700 flex flex-col overflow-hidden">
+    <aside
+      className="shrink-0 bg-slate-900 border-l border-slate-700 flex flex-col overflow-hidden relative"
+      style={{ width: panelWidth }}
+    >
+      {/* Drag handle */}
+      <div
+        onMouseDown={handleDragStart}
+        className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize z-10 group"
+        title="Drag to resize"
+      >
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-transparent group-hover:bg-blue-500/40 transition-colors duration-150" />
+      </div>
+
       {/* Panel header */}
       <div className="px-5 py-3.5 border-b border-slate-700 flex items-center justify-between shrink-0">
         <span className="text-xs font-semibold tracking-widest text-slate-500 uppercase">
@@ -81,7 +135,7 @@ export default function DetailPanel({ selectedNodeId, onClose }: DetailPanelProp
           {/* Node identity block */}
           <div className="px-5 pt-4 pb-3.5 border-b border-slate-700/50 shrink-0">
             <div className={`h-0.5 w-10 rounded-full mb-3 ${ACCENT_BAR[node.category]}`} />
-            <h3 className="text-[15px] font-semibold text-white leading-snug mb-2">
+            <h3 className={`font-semibold text-white leading-snug mb-2 ${isWide ? 'text-base' : 'text-[15px]'}`}>
               {content.title}
             </h3>
             <span className={`inline-flex items-center text-xs px-2.5 py-0.5 rounded-full border font-medium ${CATEGORY_BADGE[node.category]}`}>
@@ -93,7 +147,7 @@ export default function DetailPanel({ selectedNodeId, onClose }: DetailPanelProp
           <div className="flex-1 overflow-y-auto scrollbar-thin px-5 py-4 space-y-4">
 
             {/* Description */}
-            <p className="text-[13px] text-slate-300 leading-relaxed">
+            <p className={`text-slate-300 leading-relaxed ${isWide ? 'text-sm' : 'text-[13px]'}`}>
               {content.description}
             </p>
 
@@ -101,39 +155,62 @@ export default function DetailPanel({ selectedNodeId, onClose }: DetailPanelProp
 
             {/* Function */}
             <Section label="Function">
-              <p className="text-[13px] text-slate-400 leading-relaxed">
+              <p className={`text-slate-400 leading-relaxed ${isWide ? 'text-sm' : 'text-[13px]'}`}>
                 {content.role}
               </p>
             </Section>
 
-            {/* Upstream */}
-            <Section label="Upstream">
-              <div className="flex flex-wrap gap-1.5">
-                {content.upstream.map((u) => (
-                  <span key={u} className="text-xs px-2 py-0.5 rounded bg-slate-800 border border-slate-700/80 text-slate-400 leading-relaxed">
-                    {u}
-                  </span>
-                ))}
+            {/* Upstream + Downstream: side-by-side when wide */}
+            {isWide ? (
+              <div className="grid grid-cols-2 gap-4">
+                <Section label="Upstream">
+                  <div className="flex flex-wrap gap-1.5">
+                    {content.upstream.map((u) => (
+                      <span key={u} className="text-xs px-2 py-1 rounded bg-slate-800 border border-slate-700/80 text-slate-400 leading-relaxed">
+                        {u}
+                      </span>
+                    ))}
+                  </div>
+                </Section>
+                <Section label="Downstream">
+                  <div className="flex flex-wrap gap-1.5">
+                    {content.downstream.map((d) => (
+                      <span key={d} className="text-xs px-2 py-1 rounded bg-slate-800 border border-slate-700/80 text-slate-400 leading-relaxed">
+                        {d}
+                      </span>
+                    ))}
+                  </div>
+                </Section>
               </div>
-            </Section>
-
-            {/* Downstream */}
-            <Section label="Downstream">
-              <div className="flex flex-wrap gap-1.5">
-                {content.downstream.map((d) => (
-                  <span key={d} className="text-xs px-2 py-0.5 rounded bg-slate-800 border border-slate-700/80 text-slate-400 leading-relaxed">
-                    {d}
-                  </span>
-                ))}
-              </div>
-            </Section>
+            ) : (
+              <>
+                <Section label="Upstream">
+                  <div className="flex flex-wrap gap-1.5">
+                    {content.upstream.map((u) => (
+                      <span key={u} className="text-xs px-2 py-0.5 rounded bg-slate-800 border border-slate-700/80 text-slate-400 leading-relaxed">
+                        {u}
+                      </span>
+                    ))}
+                  </div>
+                </Section>
+                <Section label="Downstream">
+                  <div className="flex flex-wrap gap-1.5">
+                    {content.downstream.map((d) => (
+                      <span key={d} className="text-xs px-2 py-0.5 rounded bg-slate-800 border border-slate-700/80 text-slate-400 leading-relaxed">
+                        {d}
+                      </span>
+                    ))}
+                  </div>
+                </Section>
+              </>
+            )}
 
             {/* Why it matters */}
             <div className="rounded-lg bg-slate-800/50 border border-slate-700/50 px-4 py-3.5">
               <div className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-2">
                 Why It Matters
               </div>
-              <p className="text-[13px] text-slate-300 leading-relaxed">
+              <p className={`text-slate-300 leading-relaxed ${isWide ? 'text-sm' : 'text-[13px]'}`}>
                 {content.whyItMatters}
               </p>
             </div>
@@ -143,13 +220,13 @@ export default function DetailPanel({ selectedNodeId, onClose }: DetailPanelProp
               <>
                 <div className="h-px bg-slate-800/80" />
                 <Section label="Key Concepts">
-                  <div className="space-y-3">
+                  <div className={isWide ? 'grid grid-cols-2 gap-3' : 'space-y-3'}>
                     {content.concepts.map((c) => (
                       <div key={c.title} className="rounded-md bg-slate-800/40 border border-slate-700/40 px-3 py-2.5">
                         <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-1">
                           {c.title}
                         </div>
-                        <p className="text-[12px] text-slate-400 leading-relaxed">
+                        <p className={`text-slate-400 leading-relaxed ${isWide ? 'text-[13px]' : 'text-[12px]'}`}>
                           {c.content}
                         </p>
                       </div>
