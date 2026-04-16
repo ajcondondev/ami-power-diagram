@@ -6,6 +6,16 @@ Built as a portfolio-quality, enterprise-style learning tool for engineers, prod
 
 ---
 
+## Screenshots
+
+![AMI Diagram overview](screenshots/amiimage1.png)
+
+![Node detail panel](screenshots/amiimage2.png)
+
+![Flow toggles and path emphasis](screenshots/amiimage3.png)
+
+---
+
 ## Overview
 
 Modern electric utilities operate two parallel systems: a **physical power network** that delivers electricity, and a **digital AMI network** that reads meters, detects outages, and enables two-way communication with every customer endpoint. This diagram maps both systems and shows how they interconnect.
