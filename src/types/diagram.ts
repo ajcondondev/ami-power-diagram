@@ -16,3 +16,13 @@ export interface DiagramConnection {
   flow: FlowType
   path: string
 }
+
+export interface NodeContent {
+  title: string
+  categoryLabel: string
+  description: string
+  role: string
+  upstream: string[]
+  downstream: string[]
+  whyItMatters: string
+}
