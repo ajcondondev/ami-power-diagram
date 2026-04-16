@@ -15,6 +15,8 @@ export interface DiagramConnection {
   id: string
   flow: FlowType
   path: string
+  fromId: string
+  toId: string
 }
 
 export interface NodeContent {
