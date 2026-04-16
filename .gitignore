@@ -26,6 +26,8 @@ CLAUDE.md
 
 # Local project documentation (not for public repo)
 PROJECT_GUIDE.md
+docs/
+screenshots/
 
 # Design source files
 *.fig
