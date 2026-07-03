@@ -16,7 +16,7 @@ export default function Header({ showPower, showData, onTogglePower, onToggleDat
         <div className="flex items-center gap-3 mb-1">
           <div className="w-2 h-2 rounded-full bg-blue-400" />
           <span className="text-xs font-semibold tracking-widest text-blue-400 uppercase">
-            Eversource Energy
+            Grid Operations
           </span>
         </div>
         <h1 className="text-xl font-semibold text-white leading-tight">
